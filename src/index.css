@@ -1,6 +1,4 @@
-input[type="email"],
-input[type="text"],
-input[type="number"],
+input,
 textarea,
 select {
   width: 400px;
@@ -14,6 +12,6 @@ label.checkbox {
   font-weight: normal;
 }
 
-button[type="submit"] {
+button {
   margin-top: 1rem;
 }
