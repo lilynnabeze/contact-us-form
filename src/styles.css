@@ -72,7 +72,7 @@ body {
 }
 
 /* Typography
-  ––––––––––––––––––––––––––––––––– */
+––––––––––––––––––––––––––––––––– */
 
 h1,
 h2,
@@ -173,7 +173,7 @@ hr {
 }
 
 /* Form
-  ––––––––––––––––––––––––––––––––– */
+––––––––––––––––––––––––––––––––– */
 label {
   font-weight: bold;
   display: flex;
@@ -423,7 +423,9 @@ button {
 }
 
 @media (hover: hover) {
-  input:hover,
+  input[type="submit"]:hover,
+  input[type="reset"]:hover,
+  input[type="button"]:hover,
   button:hover {
     cursor: pointer;
     background-color: var(--gray-800);
@@ -431,7 +433,9 @@ button {
 }
 
 @media (hover: hover) and (prefers-color-scheme: dark) {
-  input:hover,
+  input[type="submit"]:hover,
+  input[type="reset"]:hover,
+  input[type="button"]:hover,
   button:hover {
     cursor: pointer;
     background-color: var(--gray-300);
@@ -439,13 +443,15 @@ button {
 }
 
 button:focus-visible,
-input:focus-visible {
+input[type="submit"]:focus-visible,
+input[type="reset"]:focus-visible,
+input[type="button"]:focus-visible {
   border-color: var(--focus-ring-color);
   outline: none;
 }
 
 /* Tables
-  ––––––––––––––––––––––––––––––––– */
+––––––––––––––––––––––––––––––––– */
 table {
   width: 100%;
   border-spacing: 0;
@@ -484,7 +490,7 @@ td {
 }
 
 /* Code
-  ––––––––––––––––––––––––––––––––– */
+––––––––––––––––––––––––––––––––– */
 code {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
@@ -522,7 +528,7 @@ pre > code::after {
 }
 
 /* Blockquote
-  ––––––––––––––––––––––––––––––––– */
+––––––––––––––––––––––––––––––––– */
 blockquote {
   border-left: 0.25rem solid var(--gray-100);
   padding: 0 1rem;
@@ -536,7 +542,7 @@ blockquote {
 }
 
 /* List
-  ––––––––––––––––––––––––––––––––– */
+––––––––––––––––––––––––––––––––– */
 ul {
   margin: 0;
   padding: 0 1px;
@@ -560,7 +566,7 @@ li {
 }
 
 /* Keyboard
-  ––––––––––––––––––––––––––––––––– */
+––––––––––––––––––––––––––––––––– */
 kbd {
   display: inline-block;
   padding: 0 0.328rem;
@@ -576,7 +582,7 @@ kbd {
 }
 
 /* Abbreviation
-  ––––––––––––––––––––––––––––––––– */
+––––––––––––––––––––––––––––––––– */
 abbr {
   text-decoration: none;
   border-bottom: 2px dashed var(--gray-600);
