@@ -1,136 +1,187 @@
-import React from 'react';
-import { Formik, Form, useField } from 'formik';
-import * as Yup from 'yup';
+import React, { useState } from "react";
+import { nanoid } from "nanoid";
 
+const INITIAL_STATE = { name: "", email: "", subject: "", message: "" };
 
+const VALIDATION = {
+  name: [
+    {
+      isValid: (value) => !!value,
+      message: "Is required",
+    },
+    {
+      isValid: (value) => /^[A-Za-z\s]*$/.test(value),
+      message: "Invalid field",
+    },
+  ],
 
-const MyTextInput = ({ label, ...props }) => {
-  // useField() returns [formik.getFieldProps(), formik.getFieldMeta()]
-  // which we can spread on <input>. We can use field meta to show an error
-  // message if the field is invalid and it has been touched (i.e. visited)
-  const [field, meta] = useField(props);
-  return (
-    <>
-      <label htmlFor={props.id || props.name}>{label}</label>
-      <input className="text-input" {...field} {...props} />
-      {meta.touched && meta.error ? (
-        <div className="error">{meta.error}</div>
-      ) : null}
-    </>
-  );
+  email: [
+    {
+      isValid: (value) => !!value,
+      message: "Is required",
+    },
+    {
+      isValid: (value) => /\S+@\S+\.\S+/.test(value),
+      message: "Invalid email address",
+    },
+  ],
+
+  message: [
+    {
+      isValid: (value) => !!value,
+      message: "Is required",
+    },
+  ],
 };
 
-const MyCheckbox = ({ children, ...props }) => {
-  // React treats radios and checkbox inputs differently other input types, select, and textarea.
-  // Formik does this too! When you specify `type` to useField(), it will
-  // return the correct bag of props for you -- a `checked` prop will be included
-  // in `field` alongside `name`, `value`, `onChange`, and `onBlur`
-  const [field, meta] = useField({ ...props, type: 'checkbox' });
+const getErrorFields = (form, touched, submitted) =>
+  Object.keys(form).reduce((acc, key) => {
+    if (!VALIDATION[key]) return acc;
+
+    if (submitted) {
+      // Return empty array for all fields when submitted is true
+      return { ...acc, [key]: [] };
+    }
+
+    const errorsPerField = VALIDATION[key]
+      .map((validation) => ({
+        isValid: validation.isValid(form[key]),
+        message: validation.message,
+      }))
+      .filter((errorPerField) => !errorPerField.isValid);
+
+    if (form[key] === "" && (touched[key] || submitted)) {
+      errorsPerField.push({ message: "Is required" });
+    }
+
+    return { ...acc, [key]: errorsPerField };
+  }, {});
+
+const ContactForm = (props) => {
+  const { loading } = props;
+  const { submitForm } = props;
+  const [form, setForm] = useState(INITIAL_STATE);
+  const [touched, setTouched] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleChange = (event) => {
+    const { id, value } = event.target;
+
+    console.log(event);
+
+    setForm((prevState) => ({
+      ...prevState,
+      [id]: value,
+    }));
+
+    setTouched((prevState) => ({
+      ...prevState,
+      [id]: true,
+    }));
+  };
+
+  const errorFields = getErrorFields(form, touched, submitted);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const hasEmptyRequiredFields = Object.keys(form).some(
+      (key) => form[key] === "" && !touched[key] && VALIDATION[key]
+    );
+
+    if (hasEmptyRequiredFields) {
+      setTouched(
+        Object.fromEntries(Object.keys(form).map((key) => [key, true]))
+      );
+      return;
+    }
+
+    const hasErrors = Object.values(errorFields).flat().length > 0;
+    if (hasErrors) {
+      setSubmitted(false);
+      return;
+    }
+    const userId = nanoid();
+
+    console.log("Id: " + nanoid());
+    console.log("name: " + form.name);
+    console.log("Email: " + form.email);
+    console.log("Subject: " + form.subject);
+    console.log("Message: " + form.message);
+
+    submitForm(form, userId);
+    setForm(INITIAL_STATE);
+    setSubmitted(true);
+  };
+
   return (
-    <div>
-      <label className="checkbox-input">
-        <input type="checkbox" {...field} {...props} />
-        {children}
-      </label>
-      {meta.touched && meta.error ? (
-        <div className="error">{meta.error}</div>
-      ) : null}
+    <div className="form-container">
+      {submitted && (
+        <div className="success-message">Form submitted successfully!</div>
+      )}
+      <form onSubmit={handleSubmit}>
+        <h1>ContactUs</h1>
+        <div className="form-field">
+          <label htmlFor="name">Full Name</label>
+          <input
+            id="name"
+            type="text"
+            value={form.name}
+            onChange={handleChange}
+          />
+          {errorFields.name?.length && (touched.name || submitted) ? (
+            <span className="error-message">{errorFields.name[0].message}</span>
+          ) : null}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="text"
+            value={form.email}
+            onChange={handleChange}
+          />
+          {errorFields.email?.length && (touched.email || submitted) ? (
+            <span className="error-message">
+              {errorFields.email[0].message}
+            </span>
+          ) : null}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="subject">Subject</label>
+          <input
+            id="subject"
+            type="text"
+            value={form.subject}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="message">Message</label>
+          <textarea
+            rows="10"
+            cols="70"
+            id="message"
+            type="text"
+            value={form.message}
+            onChange={handleChange}
+          ></textarea>
+
+          {errorFields.message?.length && (touched.message || submitted) ? (
+            <span className="error-message">
+              {errorFields.message[0].message}
+            </span>
+          ) : null}
+        </div>
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Submitting..." : "Submit"}
+        </button>
+      </form>
     </div>
   );
 };
-
-const MySelect = ({ label, ...props }) => {
-  const [field, meta] = useField(props);
-  return (
-    <div>
-      <label htmlFor={props.id || props.name}>{label}</label>
-      <select {...field} {...props} />
-      {meta.touched && meta.error ? (
-        <div className="error">{meta.error}</div>
-      ) : null}
-    </div>
-  );
-};
-
-// And now we can use these
-const Input = () => {
-  return (
-    <>
-      <h1>Subscribe!</h1>
-      <Formik
-        initialValues={{
-          firstName: '',
-          lastName: '',
-          email: '',
-          acceptedTerms: false, // added for our checkbox
-          jobType: '', // added for our select
-        }}
-        validationSchema={Yup.object({
-          firstName: Yup.string()
-            .max(15, 'Must be 15 characters or less')
-            .required('Required'),
-          lastName: Yup.string()
-            .max(20, 'Must be 20 characters or less')
-            .required('Required'),
-          email: Yup.string()
-            .email('Invalid email address')
-            .required('Required'),
-          acceptedTerms: Yup.boolean()
-            .required('Required')
-            .oneOf([true], 'You must accept the terms and conditions.'),
-          jobType: Yup.string()
-            .oneOf(
-              ['designer', 'development', 'product', 'other'],
-              'Invalid Job Type'
-            )
-            .required('Required'),
-        })}
-        onSubmit={(values, { setSubmitting }) => {
-          setTimeout(() => {
-            alert(JSON.stringify(values, null, 2));
-            setSubmitting(false);
-          }, 400);
-        }}
-      >
-        <Form>
-          <MyTextInput
-            label="First Name"
-            name="firstName"
-            type="text"
-            placeholder="Jane"
-          />
-
-          <MyTextInput
-            label="Last Name"
-            name="lastName"
-            type="text"
-            placeholder="Doe"
-          />
-
-          <MyTextInput
-            label="Email Address"
-            name="email"
-            type="email"
-            placeholder="jane@formik.com"
-          />
-
-          <MySelect label="Job Type" name="jobType">
-            <option value="">Select a job type</option>
-            <option value="designer">Designer</option>
-            <option value="development">Developer</option>
-            <option value="product">Product Manager</option>
-            <option value="other">Other</option>
-          </MySelect>
-
-          <MyCheckbox name="acceptedTerms">
-            I accept the terms and conditions
-          </MyCheckbox>
-
-          <button type="submit">Submit</button>
-        </Form>
-      </Formik>
-    </>
-  );
-};
-
-export default Input;
+export default ContactForm;
